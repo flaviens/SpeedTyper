@@ -313,7 +313,7 @@ var server = http.createServer(function(req, res) {
 
 	else {
 		res.writeHead(200);
-		res.end('Bienvenue.');
+		res.end('Ping');
 	}
 });
 server.listen(8080);

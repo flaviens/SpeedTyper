@@ -15,9 +15,16 @@ public class NetworkManager {
 		return serverUrl.length() > 0;
 	}
 	
-	public boolean connect(String serverUrl) {
+	/**
+	 * @param ip remote ip.
+	 * @param port remote port.
+	 * @return true iif connection successful, and stores ip and port in this case.
+	 */
+	public boolean connect(String ip, String port) {
 		
-		GetRequest request = new GetRequest(serverUrl);
+		String tempUrl = "http://"+ip+":"+port;
+		
+		GetRequest request = new GetRequest(tempUrl);
 		request.start();
 		
 		 // TODO attendre un signal de fin
@@ -25,12 +32,13 @@ public class NetworkManager {
 		try {
 			request.join();
 		} catch (InterruptedException e) {
+			this.serverUrl = "";
 			e.printStackTrace();
 			return false;
 		}
 		
-		if(request.getResponse().equals("Bienvenue")) {
-			this.serverUrl = serverUrl;
+		if(request.getResponse().equals("Ping")) {
+			this.serverUrl = tempUrl;
 			return true;
 		}
 		this.serverUrl = "";
@@ -43,18 +51,9 @@ public class NetworkManager {
 
 		GetRequest request = new GetRequest(serverUrl+"lobbies");
 
-		request.start();
-		
-		// TODO attendre le signal
-		
-		try {
-			request.join();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-			return null;
-		}
-		
-		return request.getResponse().split(",");
+		request.run(); // Actually, we execute it sequentially
+				
+		return request.getResponse().split(","); // TODO Decode JSON instead of csv
 	}
 	
 }

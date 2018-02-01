@@ -1,13 +1,20 @@
 var http = require('http');
 var url = require('url');
+var fs = require('fs');
+
+const fileName = "words.txt";
+var fileContent = "";
+const carriageReturn = "\r\n"
 
 var lobbies = {};
 var games  = {};
+var dictionaries = {}; // Will contain csv words that the players will have to type
 
 var forbiddenNames = [];
 
 const countdown = 15000;
 const gameDuration = 60000; // TODO
+const wordNumber = 2000;
 
 // TODO gérer la fonction leave en jeu.
 
@@ -20,6 +27,26 @@ class Player {
 		// ready has 2 usefulnesses:
 		//  - In the lobby, to express readiness.
 		//	- In game, to express that the client has finished the session.
+	}
+}
+
+function genRandInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function readWordsFromFile() {
+	fs.readFile(fileName, 'utf-8', function(err, data) {
+		if(err) throw err;
+		fileContent = data.split('\r\n');
+		console.log(fileContent);
+	});
+}
+
+function generateWordList(lobbyName) {
+	dictionaries[lobbyName] = [];
+	console.log(fileContent);
+	for(var i = 0; i < wordNumber; i++) {
+		dictionaries[lobbyName].push(fileContent[genRandInt(0, fileContent.length-1)]);
 	}
 }
 
@@ -54,11 +81,11 @@ function createGame(lobbyName) {
 	games[lobbyName]["remainingTime"] = Date.now();
 	games[lobbyName]["duration"] = gameDuration;
 	delete lobbies[lobbyName];
+	delete dictionaries[lobbyName];
 }
 
 function shouldCreateGame(lobbyName) {
 	for(playerId in lobbies[lobbyName]) {
-		console.log(lobbies[lobbyName][playerId]);
 		if(!lobbies[lobbyName][playerId].ready)
 			return false;
 	}
@@ -69,12 +96,26 @@ function getRemainingTime(gameName) {
 	return games[gameName]["creationTime"] + countdown - Date.now();
 }
 
+// -------------------------------------------------------
+// 					Initialization
+// -------------------------------------------------------
+
+readWordsFromFile();
+
+// -------------------------------------------------------
+// 					Node.js server
+// -------------------------------------------------------
+
+
 var server = http.createServer(function(req, res) {
 	var page = url.parse(req.url).pathname;
 
 	var pageElems = page.split("/").slice(1);
 
-	console.log(lobbies);
+	if(pageElems[0] == "read") { // TODO Remove
+	
+		readWordsFromFile();
+	}
 
 	if(pageElems[0] == "lobbies") {
 		res.writeHead(200, {"Content-Type": "application/json"});
@@ -102,16 +143,40 @@ var server = http.createServer(function(req, res) {
 		}
 		else {
 			lobbies[pageElems[1]] = [new Player(req.connection.remoteAddress, pageElems[2])];
+			generateWordList(pageElems[1]);
 			res.writeHead(200);
 			res.end("Created.");
 		}		
 	}
+	else if(pageElems[0] == "words" && pageElems.length > 1) { // "words"/lobby
+		if(pageElems[1] in lobbies) {
+			if(containsIp(lobbies[pageElems[1]], req.connection.remoteAddress)) {
+				res.writeHead(400);
+				console.log(dictionaries);
+				res.end(dictionaries[pageElems[1]].join());
+			}
+			else {
+				res.writeHead(400);
+				res.end("Error: client not in lobby.");
+			}
+		}
+		else {
+			if(pageElems[1] in games) {
+				res.writeHead(400);
+				res.end("Error: lobby already playing.");
+			}
+			else {
+				res.writeHead(400);
+				res.end("Error: lobby does not exist.");
+			}
+		}
+	}
+
 	else if(pageElems[0] == "ready" && pageElems.length > 1) { // "ready"/lobby
 		if(pageElems[1] in lobbies) {
 			if(containsIp(lobbies[pageElems[1]], req.connection.remoteAddress)) {
 				var index = ipIndex(lobbies[pageElems[1]], req.connection.remoteAddress);
-				
-				console.log(lobbies[pageElems[1]][index]);
+
 				if(lobbies[pageElems[1]][index].ready) {
 					res.writeHead(200);
 					res.end("Warning: already ready.");
@@ -151,7 +216,6 @@ var server = http.createServer(function(req, res) {
 			if(containsIp(lobbies[pageElems[1]], req.connection.remoteAddress)) {
 				var index = ipIndex(lobbies[pageElems[1]], req.connection.remoteAddress);
 				
-				console.log(lobbies[pageElems[1]][index]);
 				if(!lobbies[pageElems[1]][index].ready) {
 					res.writeHead(200);
 					res.end("Warning: already not ready.");
@@ -179,7 +243,7 @@ var server = http.createServer(function(req, res) {
 		}
 	}
 
-	else if(pageElems[0] == "leavelobby" && pageElems.length > 1) {
+	else if(pageElems[0] == "leave" && pageElems.length > 1) {
 		if(pageElems[1] in lobbies) {
 			var index = ipIndex(lobbies[pageElems[1]], req.connection.remoteAddress);
 
@@ -189,11 +253,29 @@ var server = http.createServer(function(req, res) {
 			}
 			else {
 				lobbies[pageElems[1]].splice(index, 1);
-				if(lobbies[pageElems[1]].length == 0)
+				if(lobbies[pageElems[1]].length == 0) {
 					delete lobbies[pageElems[1]];
+					delete dictionaries[pageElems[1]];
+				}
 				res.writeHead(200);
 				res.end("Success.");
 			}			
+		}
+		else if(pageElems[1] in games) {
+			var index = ipIndex(games[pageElems[1]]["players"], req.connection.remoteAddress);
+
+			if(index == -1) {
+				res.writeHead(400);
+				res.end("Error: was not in game.");
+			}
+			else {
+				games[pageElems[1]]["players"].splice(index, 1);
+				if(games[pageElems[1]]["players"].length == 0)
+					delete games[pageElems[1]];
+				res.writeHead(200);
+				res.end("Success.");
+			}			
+
 		}
 		else {
 			if(pageElems[1] in games) {

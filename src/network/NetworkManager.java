@@ -2,8 +2,15 @@ package network;
 
 import java.net.ConnectException;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import game.Lobby;
+import game.Player;
+import graphics.LobbiesFrame;
+
 public class NetworkManager {
-	public static final NetworkManager instance = new NetworkManager();
+	private static final NetworkManager instance = new NetworkManager();
 	
 	private String serverUrl = "";
 	
@@ -45,15 +52,33 @@ public class NetworkManager {
 		return false;
 	}
 	
-	public String[] getLobbies() throws ConnectException {
+	public void updateLobbies() throws Exception {
+		serverUrl = "http://localhost:8080"; // TODO remove
 		if(serverUrl == "")
 			throw new ConnectException();
 
-		GetRequest request = new GetRequest(serverUrl+"lobbies");
+		GetRequest request = new GetRequest(serverUrl+"/lobbies");
 
 		request.run(); // Actually, we execute it sequentially
-				
-		return request.getResponse().split(","); // TODO Decode JSON instead of csv
+		
+		Lobby.lobbies.clear();
+		
+		JSONObject json = new JSONObject(request.getResponse());
+		for(String str : json.keySet()) {
+			Lobby newLobby = new Lobby(str);
+			JSONArray arr = json.getJSONArray(str);
+			for(int i = 0; i < arr.length(); i++) {
+				JSONObject jsonPlayer = arr.getJSONObject(i);
+				Player player = new Player();
+				player.ip = (String) jsonPlayer.get("ip");
+				player.name = (String) jsonPlayer.get("name");
+				player.score = (int) jsonPlayer.get("score");
+				player.ready = (boolean) jsonPlayer.get("ready");
+
+				newLobby.players.add(player);
+			}
+			Lobby.lobbies.add(newLobby);
+		}	
 	}
 	
 }

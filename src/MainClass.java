@@ -15,7 +15,7 @@ public class MainClass {
 		ConnectionFrame.getInstance().initialize();
 		LobbiesFrame.getInstance().initialize();
 		
-		LobbiesFrame.getInstance().open();
+		ConnectionFrame.getInstance().open();
 	}
 
 }

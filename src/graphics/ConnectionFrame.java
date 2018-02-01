@@ -16,7 +16,7 @@ import listener.ButtonConnectListener;
 
 public class ConnectionFrame extends JFrame {
 
-	public static final ConnectionFrame instance = new ConnectionFrame();
+	private static final ConnectionFrame instance = new ConnectionFrame();
 	
 	public static ConnectionFrame getInstance() {
 		return instance;
@@ -27,9 +27,7 @@ public class ConnectionFrame extends JFrame {
 	private JTextField textFieldPort;
 	
 	private ButtonConnectListener buttonConnectListener;
-	
-	private ActionListener btnConnectListener;
-	
+		
 	public ConnectionFrame() {
 	}
 	

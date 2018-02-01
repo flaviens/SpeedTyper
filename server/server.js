@@ -12,11 +12,8 @@ var dictionaries = {}; // Will contain csv words that the players will have to t
 
 var forbiddenNames = [];
 
-const countdown = 15000;
-const gameDuration = 60000; // TODO
-const wordNumber = 2000;
-
-// TODO gérer la fonction leave en jeu.
+const countdown = 15000; // Parameters
+const gameDuration = 60000;
 
 class Player {
 	constructor(ip, name) {
@@ -24,7 +21,7 @@ class Player {
 		this.name = name;
 		this.score = 0;
 		this.ready = false;
-		// ready has 2 usefulnesses:
+		// ready has 2 uses:
 		//  - In the lobby, to express readiness.
 		//	- In game, to express that the client has finished the session.
 	}
@@ -38,14 +35,12 @@ function readWordsFromFile() {
 	fs.readFile(fileName, 'utf-8', function(err, data) {
 		if(err) throw err;
 		fileContent = data.split('\r\n');
-		console.log(fileContent);
 	});
 }
 
 function generateWordList(lobbyName) {
 	dictionaries[lobbyName] = [];
-	console.log(fileContent);
-	for(var i = 0; i < wordNumber; i++) {
+	for(var i = 0; i < gameDuration/10; i++) { // Suppose no one will type more than one word every 10ms.
 		dictionaries[lobbyName].push(fileContent[genRandInt(0, fileContent.length-1)]);
 	}
 }
@@ -152,7 +147,6 @@ var server = http.createServer(function(req, res) {
 		if(pageElems[1] in lobbies) {
 			if(containsIp(lobbies[pageElems[1]], req.connection.remoteAddress)) {
 				res.writeHead(400);
-				console.log(dictionaries);
 				res.end(dictionaries[pageElems[1]].join());
 			}
 			else {
@@ -263,7 +257,6 @@ var server = http.createServer(function(req, res) {
 		}
 		else if(pageElems[1] in games) {
 			var index = ipIndex(games[pageElems[1]]["players"], req.connection.remoteAddress);
-
 			if(index == -1) {
 				res.writeHead(400);
 				res.end("Error: was not in game.");
@@ -278,17 +271,9 @@ var server = http.createServer(function(req, res) {
 
 		}
 		else {
-			if(pageElems[1] in games) {
-				res.writeHead(400);
-				res.end("Error: lobby already playing."); // TODO
-			}
-			else {
-				res.writeHead(400);
-				res.end("Error: lobby does not exist.");
-			}
+			res.writeHead(400);
+			res.end("Error: lobby or game does not exist.");
 		}
-		res.writeHead(400);
-		res.end("Error: was not in lobby.");
 	}
 	else if(pageElems[0] == "game" && pageElems.length > 1) {
 		if(pageElems[1] in games) {
@@ -298,8 +283,8 @@ var server = http.createServer(function(req, res) {
 		}
 		else {
 			if(pageElems[1] in lobbies) {
-				res.writeHead(400);
-				res.end("Error: still in lobby.");
+				res.writeHead(200);
+				res.end("{}");
 			}
 			else {
 				res.writeHead(400);
@@ -309,7 +294,7 @@ var server = http.createServer(function(req, res) {
 	}
 	else if(pageElems[0] == "updatescore" && pageElems.length > 2) { // "updatescore"/"game"/score
 		if(pageElems[1] in games) { // TODO Regarder si la partie est terminee et si elle a deja commencé
-			index = ipIndex(games[pageElems[1]], req.connection.remoteAddress);
+			index = ipIndex(games[pageElems[1]]["players"], req.connection.remoteAddress);
 			games[pageElems[1]]["players"][index] = pageElems[2];
 			res.writeHead(200);
 			res.end("Success");

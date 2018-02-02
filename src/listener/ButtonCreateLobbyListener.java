@@ -13,7 +13,6 @@ public class ButtonCreateLobbyListener implements ActionListener{
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		System.out.println("Creating lobby");
 		LobbiesFrame.getInstance().createLobby();
 	}
 

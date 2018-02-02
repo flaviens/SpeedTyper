@@ -2,6 +2,7 @@ package concurrent;
 
 import game.Lobby;
 import graphics.ConnectionFrame;
+import graphics.GameFrame;
 import graphics.LobbiesFrame;
 import graphics.LobbyFrame;
 import network.NetworkManager;
@@ -25,7 +26,7 @@ public class LobbyJoiner extends Thread {
 	public void run() {
 		try {
 			if(NetworkManager.getInstance().joinLobby(lobbyName, playerName)) {
-				// TODO Close all other frames
+				GameFrame.getInstance().close();
 				ConnectionFrame.getInstance().close();
 				LobbiesFrame.getInstance().close();
 				LobbyFrame.getInstance().open();

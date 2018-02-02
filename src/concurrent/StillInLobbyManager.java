@@ -1,32 +1,35 @@
 package concurrent;
 
 import game.Lobby;
-import graphics.LobbyFrame;
+import graphics.GameFrame;
 import network.NetworkManager;
 
-public class LobbyRefresher extends Thread {
-
+public class StillInLobbyManager extends Thread {
 	private boolean stopRequested;
 	
-	public LobbyRefresher() {
+	public StillInLobbyManager() {
 		stopRequested = false;
 	}
 	
 	public void requestStop() {
 		stopRequested = true;
 	}
-	
+
 	@Override
 	public void run() {
-		while(!stopRequested) {			
-			NetworkManager.getInstance().updateLobby(Lobby.currentLobby.name);
-			LobbyFrame.getInstance().updateLobby();
-		
+		while(!stopRequested) {
 			try {
-				Thread.sleep(400);
+				NetworkManager.getInstance().stillInLobby();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+			try {
+				Thread.sleep(2000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
 	}
+
 }

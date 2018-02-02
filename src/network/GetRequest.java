@@ -27,8 +27,6 @@ public class GetRequest extends Thread {
 	public void run() {
 
 		try {
-			response = "ERR";
-
 			StringBuilder result = new StringBuilder();
 			URL url = new URL(str_url);
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();

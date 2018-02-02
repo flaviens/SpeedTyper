@@ -19,6 +19,7 @@ import concurrent.GameStartedChecker;
 import concurrent.LobbiesRefresher;
 import concurrent.LobbyJoiner;
 import concurrent.LobbyRefresher;
+import concurrent.StillInLobbyManager;
 import game.Lobby;
 import game.Player;
 import listener.ButtonBackListener;
@@ -93,6 +94,7 @@ public class LobbyFrame extends JFrame {
 	
 	private LobbyRefresher lobbyRefresher;
 	private GameStartedChecker gameStartedChecker;
+	private StillInLobbyManager stillInLobbyManager;
 	
 	private JPanel contentPane;
 	
@@ -102,10 +104,6 @@ public class LobbyFrame extends JFrame {
 	private JScrollPane scrollPane;
 	private JButton btnBack;
 	private JButton btnReady;
-
-
-	// TODO Pinger régulièrement la présence dans le lobby
-	// TODO Fetch words
 	
 	public LobbyFrame() {
 		model = new LobbyTableModel();
@@ -162,19 +160,27 @@ public class LobbyFrame extends JFrame {
 	}
 	
 	public void open() {
+		if(isVisible())
+			return;
+		
 		setVisible(true);
 
 		lobbyRefresher = new LobbyRefresher();
 		gameStartedChecker = new GameStartedChecker();
+		stillInLobbyManager = new StillInLobbyManager();
 		lobbyRefresher.start();
 		gameStartedChecker.start();
+		stillInLobbyManager.start();
 	}
 
 	public void close() {
+		if(!isVisible())
+			return;
 		setVisible(false);
-
+		
 		lobbyRefresher.requestStop();
 		gameStartedChecker.requestStop();
+		stillInLobbyManager.requestStop();
 	}
 
 	public void updateLobby() {

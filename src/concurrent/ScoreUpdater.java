@@ -12,7 +12,7 @@ public class ScoreUpdater extends Thread {
 	}
 
 	public void requestStop() {
-		stopRequested = false;
+		stopRequested = true;
 	}
 
 	@Override

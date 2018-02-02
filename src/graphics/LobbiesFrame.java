@@ -7,6 +7,8 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.AbstractTableModel;
 
 import concurrent.LobbiesRefresher;
@@ -14,9 +16,11 @@ import concurrent.LobbyJoiner;
 import game.Lobby;
 import listener.ButtonCreateLobbyListener;
 import listener.LobbySelectListener;
+import network.NetworkManager;
 
 import javax.swing.JTable;
 import javax.swing.SpringLayout;
+import javax.swing.SwingUtilities;
 import javax.swing.JTextField;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
@@ -99,15 +103,15 @@ public class LobbiesFrame extends JFrame {
 
 	private LobbiesTableModel model;
 	private JScrollPane scrollPane;
+	private JButton btnDisconnect;
 
 	public LobbiesFrame() {
 		model = new LobbiesTableModel();
 	}
-	
-	// TODO Interdire slashs et virgules et espaces
 
 	public void initialize() {
 		setTitle("Lobbies");
+		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 357);
 		contentPane = new JPanel();
@@ -124,12 +128,11 @@ public class LobbiesFrame extends JFrame {
 		txtCreate.setColumns(10);
 
 		JButton btnJoin = new JButton("Join");
-		sl_contentPane.putConstraint(SpringLayout.WEST, btnJoin, 171, SpringLayout.WEST, contentPane);
-		sl_contentPane.putConstraint(SpringLayout.SOUTH, btnJoin, -12, SpringLayout.NORTH, txtCreate);
-		sl_contentPane.putConstraint(SpringLayout.EAST, btnJoin, -169, SpringLayout.EAST, contentPane);
 		contentPane.add(btnJoin);
 
 		JButton btnCreate = new JButton("Create");
+		sl_contentPane.putConstraint(SpringLayout.WEST, btnJoin, 10, SpringLayout.WEST, btnCreate);
+		sl_contentPane.putConstraint(SpringLayout.SOUTH, btnJoin, -21, SpringLayout.NORTH, btnCreate);
 		btnCreate.addActionListener(new ButtonCreateLobbyListener());
 		sl_contentPane.putConstraint(SpringLayout.SOUTH, btnCreate, -3, SpringLayout.SOUTH, contentPane);
 		sl_contentPane.putConstraint(SpringLayout.EAST, btnCreate, -31, SpringLayout.EAST, contentPane);
@@ -150,14 +153,15 @@ public class LobbiesFrame extends JFrame {
 		
 		scrollPane = new JScrollPane();
 		sl_contentPane.putConstraint(SpringLayout.NORTH, scrollPane, 24, SpringLayout.SOUTH, txtName);
+		sl_contentPane.putConstraint(SpringLayout.SOUTH, scrollPane, -87, SpringLayout.SOUTH, contentPane);
+		sl_contentPane.putConstraint(SpringLayout.NORTH, btnJoin, 6, SpringLayout.SOUTH, scrollPane);
+		sl_contentPane.putConstraint(SpringLayout.EAST, btnJoin, 0, SpringLayout.EAST, scrollPane);
 		sl_contentPane.putConstraint(SpringLayout.WEST, scrollPane, 10, SpringLayout.WEST, contentPane);
-		sl_contentPane.putConstraint(SpringLayout.SOUTH, scrollPane, -16, SpringLayout.NORTH, btnJoin);
 		sl_contentPane.putConstraint(SpringLayout.EAST, scrollPane, -10, SpringLayout.EAST, contentPane);
 		contentPane.add(scrollPane);
 		
 		table = new JTable(model);
 		table.addMouseListener(new LobbySelectListener());
-		sl_contentPane.putConstraint(SpringLayout.NORTH, btnJoin, 17, SpringLayout.SOUTH, table);
 		scrollPane.setViewportView(table);
 		sl_contentPane.putConstraint(SpringLayout.NORTH, table, 145, SpringLayout.NORTH, contentPane);
 		sl_contentPane.putConstraint(SpringLayout.WEST, table, 10, SpringLayout.WEST, contentPane);
@@ -167,9 +171,24 @@ public class LobbiesFrame extends JFrame {
 		BorderLayout blayout = new BorderLayout();
 		blayout.addLayoutComponent(table.getTableHeader(), BorderLayout.NORTH);
 		blayout.addLayoutComponent(table, BorderLayout.SOUTH);
+		
+		btnDisconnect = new JButton("Disconnect");
+		btnDisconnect.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				NetworkManager.getInstance().disconnect();
+			}
+		});
+		sl_contentPane.putConstraint(SpringLayout.NORTH, btnDisconnect, 0, SpringLayout.NORTH, btnJoin);
+		sl_contentPane.putConstraint(SpringLayout.WEST, btnDisconnect, 0, SpringLayout.WEST, txtCreate);
+		sl_contentPane.putConstraint(SpringLayout.SOUTH, btnDisconnect, 0, SpringLayout.SOUTH, btnJoin);
+		sl_contentPane.putConstraint(SpringLayout.EAST, btnDisconnect, 19, SpringLayout.EAST, lblYourName);
+		contentPane.add(btnDisconnect);
 	}
 
 	public void open() {
+		if(isVisible())
+			return;
 		setVisible(true);
 
 		lobbiesRefresher = new LobbiesRefresher();
@@ -177,6 +196,8 @@ public class LobbiesFrame extends JFrame {
 	}
 
 	public void close() {
+		if(!isVisible())
+			return;
 		setVisible(false);
 
 		lobbiesRefresher.requestStop();
@@ -188,7 +209,7 @@ public class LobbiesFrame extends JFrame {
 	
 	public void createLobby() {
 		lobbyJoiner = new LobbyJoiner();
-		lobbyJoiner.start(txtCreate.getText(), txtName.getText());
+		lobbyJoiner.start(txtCreate.getText().replaceAll("[^0-9a-zA-Z_]", ""), txtName.getText());
 	}
 	
 	public void joinExistingLobby(String lobbyName) {

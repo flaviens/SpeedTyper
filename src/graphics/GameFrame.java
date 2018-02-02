@@ -5,10 +5,13 @@ import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Robot;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.util.PriorityQueue;
 
 import javax.security.auth.login.CredentialNotFoundException;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
@@ -19,8 +22,12 @@ import javax.swing.table.AbstractTableModel;
 import concurrent.CountDownManager;
 import concurrent.GameUpdater;
 import concurrent.ScoreUpdater;
+import concurrent.StillInLobbyManager;
 import game.Lobby;
 import game.Player;
+import listener.ButtonBackListener;
+import network.NetworkManager;
+
 import javax.swing.SpringLayout;
 import javax.swing.JTextPane;
 import javax.swing.JLabel;
@@ -109,6 +116,7 @@ public class GameFrame extends JFrame {
 	private CountDownManager countDownManager;
 	private ScoreUpdater scoreUpdater;
 	private GameUpdater gameUpdater;
+	private StillInLobbyManager stillInLobbyManager;
 	
 	private JLabel lblCountdown;
 	private JLabel lblNextword;
@@ -140,7 +148,7 @@ public class GameFrame extends JFrame {
 		contentPane.setLayout(sl_contentPane);
 		
 		textPaneIncoming = new JTextPane();
-		textPaneIncoming.setEnabled(true); // TODO false
+		textPaneIncoming.setEnabled(true);
 		sl_contentPane.putConstraint(SpringLayout.NORTH, textPaneIncoming, 52, SpringLayout.NORTH, contentPane);
 		sl_contentPane.putConstraint(SpringLayout.WEST, textPaneIncoming, 15, SpringLayout.WEST, contentPane);
 		sl_contentPane.putConstraint(SpringLayout.SOUTH, textPaneIncoming, -5, SpringLayout.SOUTH, contentPane);
@@ -213,27 +221,37 @@ public class GameFrame extends JFrame {
 		scrollPane.setViewportView(table);
 		
 		JLabel lblGameStartsIn = new JLabel("Game starts in :");
-		sl_contentPane.putConstraint(SpringLayout.NORTH, lblGameStartsIn, 4, SpringLayout.NORTH, lblIncomingWords);
-		sl_contentPane.putConstraint(SpringLayout.EAST, lblGameStartsIn, -138, SpringLayout.EAST, contentPane);
+		sl_contentPane.putConstraint(SpringLayout.SOUTH, lblGameStartsIn, 0, SpringLayout.SOUTH, lblIncomingWords);
+		sl_contentPane.putConstraint(SpringLayout.EAST, lblGameStartsIn, -218, SpringLayout.EAST, contentPane);
 		contentPane.add(lblGameStartsIn);
 		
 		lblCountdown = new JLabel("countdown");
-		sl_contentPane.putConstraint(SpringLayout.NORTH, lblCountdown, 0, SpringLayout.NORTH, lblNowWrite);
 		sl_contentPane.putConstraint(SpringLayout.WEST, lblCountdown, 10, SpringLayout.WEST, lblGameStartsIn);
-		contentPane.add(lblCountdown);	}
+		contentPane.add(lblCountdown);
+		
+		JButton btnQuit = new JButton("Quit");
+		btnQuit.addActionListener(new ButtonBackListener());
+		sl_contentPane.putConstraint(SpringLayout.NORTH, lblCountdown, 4, SpringLayout.NORTH, btnQuit);
+		sl_contentPane.putConstraint(SpringLayout.NORTH, btnQuit, 0, SpringLayout.NORTH, textPaneIncoming);
+		sl_contentPane.putConstraint(SpringLayout.WEST, btnQuit, -143, SpringLayout.EAST, contentPane);
+		sl_contentPane.putConstraint(SpringLayout.EAST, btnQuit, -47, SpringLayout.EAST, contentPane);
+		contentPane.add(btnQuit);
+	}
 	
 	public void open() {
+		if(isVisible())
+			return;
 		setVisible(true);
 		
 		countDownManager = new CountDownManager();
 		countDownManager.start();
 		
-		// TODO Move
 		gameUpdater = new GameUpdater();
 		scoreUpdater = new ScoreUpdater();
+		stillInLobbyManager = new StillInLobbyManager();
 		scoreUpdater.start();
 		gameUpdater.start();
-				
+		stillInLobbyManager.start();
 		currentWordIndex = 0;
 		currentWord = Lobby.currentLobbyWords[0];
 
@@ -254,12 +272,16 @@ public class GameFrame extends JFrame {
 		textPane_1.setText(writtenText);
 		
 		lblNextword.setText(currentWord);
-		
-		// TODO repaint ?
 	}
 	
 	public void close() {
+		if(!isVisible())
+			return;
 		setVisible(false);
+	
+		gameUpdater.requestStop();
+		scoreUpdater.requestStop();
+		stillInLobbyManager.requestStop();
 	}
 	
 	public void updateCountDown(int remaining) {
@@ -295,10 +317,9 @@ public class GameFrame extends JFrame {
 			score += currentWord.length();
 			try {
 				robot = new Robot();
-				for(int i = 0; i < 100; i++)
+				for(int i = 0; i < 200; i++)
 					robot.keyPress(KeyEvent.VK_BACK_SPACE);
 			} catch (AWTException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 

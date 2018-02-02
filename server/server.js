@@ -14,6 +14,10 @@ var forbiddenNames = [];
 
 const countdown = 5000; // Parameters
 const gameDuration = 60000;
+const connectionTimeout = 5000;
+const inactivityCheckInterval = 1000;
+
+var nextInactiveCheckTimeStamp = 0;
 
 class Player {
 	constructor(ip, name) {
@@ -21,6 +25,7 @@ class Player {
 		this.name = name;
 		this.score = 0;
 		this.ready = false;
+		this.lastConnection = Date.now();
 		// ready has 2 uses:
 		//  - In the lobby, to express readiness.
 		//	- In game, to express that the client has finished the session.
@@ -91,6 +96,14 @@ function getRemainingTime(gameName) {
 	return games[gameName]["creationTime"] + countdown - Date.now();
 }
 
+function shouldCheckInactive() {
+	if(nextInactiveCheckTimeStamp <= Date.now()) {
+		nextInactiveCheckTimeStamp = Date.now() + inactivityCheckInterval;
+		return true;
+	}
+	return false;
+}
+
 // -------------------------------------------------------
 // 					Initialization
 // -------------------------------------------------------
@@ -107,10 +120,32 @@ var server = http.createServer(function(req, res) {
 
 	var pageElems = page.split("/").slice(1);
 
-	if(pageElems[0] == "read") { // TODO Remove
-	
-		readWordsFromFile();
+
+
+	// Check for inactive players in lobbies and games
+
+	if(shouldCheckInactive()) {
+		Object.keys(lobbies).map(function(lobby, index, object) {
+			Object.keys(lobbies[lobby]).forEach(function(player) {
+				if(lobbies[lobby][player].lastConnection + connectionTimeout <= Date.now())
+					lobbies[lobby].splice(player, 1);
+			});
+			if(lobbies[lobby].length == 0)
+				delete lobbies[lobby];
+		});
+		Object.keys(games).map(function(game, index, object) {
+			games[game].players.forEach(function(player) {
+				if(player.lastConnection + connectionTimeout <= Date.now())
+					games[game].players.splice(player, 1);
+			});
+			if(games[game].players.length == 0)
+				delete games[game];
+		});
 	}
+
+
+
+	// Manage requests
 
 	if(pageElems[0] == "lobbies") {
 		res.writeHead(200, {"Content-Type": "application/json"});
@@ -165,7 +200,44 @@ var server = http.createServer(function(req, res) {
 			}
 		}
 	}
+	else if(pageElems[0] == "stillinlobby" && pageElems.length > 1) { // "stillinlobby"/lobby
+		if(pageElems[1] in lobbies) {
+			if(containsIp(lobbies[pageElems[1]], req.connection.remoteAddress)) {
+				var index = ipIndex(lobbies[pageElems[1]], req.connection.remoteAddress);
 
+				lobbies[pageElems[1]][index].lastConnection = Date.now();
+				res.writeHead(200);
+				res.end("Success.");
+			}
+			else {
+				res.writeHead(400);
+				res.end("Error: client not in lobby.");
+			}
+		}
+		else if(pageElems[1] in games) {
+			if(containsIp(games[pageElems[1]].players, req.connection.remoteAddress)) {
+				var index = ipIndex(games[pageElems[1]]["players"], req.connection.remoteAddress);
+
+				games[pageElems[1]]["players"][index].lastConnection = Date.now();
+				res.writeHead(200);
+				res.end("Success.");
+			}
+			else {
+				res.writeHead(400);
+				res.end("Error: client not in lobby.");
+			}
+		}
+		else {
+			if(pageElems[1] in games) {
+				res.writeHead(400);
+				res.end("Error: lobby already playing.");
+			}
+			else {
+				res.writeHead(400);
+				res.end("Error: lobby does not exist.");
+			}
+		}
+	}
 	else if(pageElems[0] == "ready" && pageElems.length > 1) { // "ready"/lobby
 		if(pageElems[1] in lobbies) {
 			if(containsIp(lobbies[pageElems[1]], req.connection.remoteAddress)) {
@@ -292,9 +364,16 @@ var server = http.createServer(function(req, res) {
 	else if(pageElems[0] == "updatescore" && pageElems.length > 2) { // "updatescore"/"game"/score
 		if(pageElems[1] in games) { // TODO Regarder si la partie est terminee et si elle a deja commencé
 			index = ipIndex(games[pageElems[1]]["players"], req.connection.remoteAddress);
-			games[pageElems[1]]["players"][index].score = pageElems[2];
-			res.writeHead(200);
-			res.end("Success");
+			
+			if(index == -1) {
+				res.writeHead(400);
+				res.end("Error: Player not in game.");
+			}
+			else {
+				games[pageElems[1]]["players"][index].score = pageElems[2];
+				res.writeHead(200);
+				res.end("Success");
+			}
 		}
 		else {
 			if(pageElems[1] in lobbies) {

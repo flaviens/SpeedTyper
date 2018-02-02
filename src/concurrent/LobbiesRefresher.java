@@ -20,16 +20,9 @@ public class LobbiesRefresher extends Thread {
 	
 	@Override
 	public void run() {
-		while(!stopRequested) {
-			// TODO quitter automatiquement les lobbies qui n'ont pas été quittés proprement
-			
-			try {
-				NetworkManager.getInstance().updateLobbies();
-				LobbiesFrame.getInstance().updateLobbies();
-			} catch (Exception e1) {
-				NetworkManager.getInstance().disconnect();
-				e1.printStackTrace();
-			}
+		while(!stopRequested) {			
+			NetworkManager.getInstance().updateLobbies();
+			LobbiesFrame.getInstance().updateLobbies();
 			
 			try {
 				Thread.sleep(400);

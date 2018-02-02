@@ -57,7 +57,7 @@ threshold,boxes,sad,donald,remind
 
 
 
-### To get information about the current game (where <gamename> is the lobby name as well)
+### To get information about the current game (where <gamename> is the lobby name as well) (the answer is {} if the game is not created yet)
 /game/<gamename>
 
 ##### Result example:
@@ -85,5 +85,10 @@ threshold,boxes,sad,donald,remind
 
 ### To update your score (to make it visible to the others, so do it regularly during the game)
 /updatescore/<gamename>/<newscore>
+
+
+
+### To stay in lobby or in game (after 5 seconds without this, you can get kicked automatically)
+/stillinlobby/<lobbyname>
 
 

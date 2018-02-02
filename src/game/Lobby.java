@@ -19,6 +19,8 @@ public class Lobby {
 	
 	// Only the LobbiesRefresher will acces this PriorityQueue
 	public static PriorityQueue<Lobby> lobbies = new PriorityQueue<Lobby>(new LobbyComparator());
+	public static Lobby currentLobby = new Lobby("Not yet created");
+	public static String[] currentLobbyWords;
 	
 	public Lobby(String name) {
 		this.name = name;

@@ -1,19 +1,19 @@
 import java.io.IOException;
 
 import graphics.ConnectionFrame;
+import graphics.GameFrame;
 import graphics.LobbiesFrame;
+import graphics.LobbyFrame;
 import network.NetworkManager;
 
 public class MainClass {
 		
 	public static void main(String[] args) throws IOException {
-		/*if(!NetworkManager.getInstance().connect("http://localhost:8080/")) {
-			System.out.println("Connection failed !");
-			return;
-		}*/
 		
 		ConnectionFrame.getInstance().initialize();
 		LobbiesFrame.getInstance().initialize();
+		LobbyFrame.getInstance().initialize();
+		GameFrame.getInstance().initialize();
 		
 		ConnectionFrame.getInstance().open();
 	}

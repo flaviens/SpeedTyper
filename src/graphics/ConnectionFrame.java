@@ -15,7 +15,6 @@ import javax.swing.border.EmptyBorder;
 import listener.ButtonConnectListener;
 
 public class ConnectionFrame extends JFrame {
-
 	private static final ConnectionFrame instance = new ConnectionFrame();
 	
 	public static ConnectionFrame getInstance() {

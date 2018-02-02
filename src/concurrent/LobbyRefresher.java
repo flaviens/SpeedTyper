@@ -1,16 +1,14 @@
 package concurrent;
 
-import java.net.ConnectException;
-
-import graphics.ConnectionFrame;
-import graphics.LobbiesFrame;
+import game.Lobby;
+import graphics.LobbyFrame;
 import network.NetworkManager;
 
-public class LobbiesRefresher extends Thread {
+public class LobbyRefresher extends Thread {
 
 	private boolean stopRequested;
 	
-	public LobbiesRefresher() {
+	public LobbyRefresher() {
 		stopRequested = false;
 	}
 	
@@ -20,12 +18,10 @@ public class LobbiesRefresher extends Thread {
 	
 	@Override
 	public void run() {
-		while(!stopRequested) {
-			// TODO quitter automatiquement les lobbies qui n'ont pas été quittés proprement
-			
+		while(!stopRequested) {			
 			try {
-				NetworkManager.getInstance().updateLobbies();
-				LobbiesFrame.getInstance().updateLobbies();
+				NetworkManager.getInstance().updateLobby(Lobby.currentLobby.name);
+				LobbyFrame.getInstance().updateLobby();
 			} catch (Exception e1) {
 				NetworkManager.getInstance().disconnect();
 				e1.printStackTrace();

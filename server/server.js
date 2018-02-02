@@ -12,7 +12,7 @@ var dictionaries = {}; // Will contain csv words that the players will have to t
 
 var forbiddenNames = [];
 
-const countdown = 15000; // Parameters
+const countdown = 5000; // Parameters
 const gameDuration = 60000;
 
 class Player {
@@ -146,7 +146,7 @@ var server = http.createServer(function(req, res) {
 	else if(pageElems[0] == "words" && pageElems.length > 1) { // "words"/lobby
 		if(pageElems[1] in lobbies) {
 			if(containsIp(lobbies[pageElems[1]], req.connection.remoteAddress)) {
-				res.writeHead(400);
+				res.writeHead(200);
 				res.end(dictionaries[pageElems[1]].join());
 			}
 			else {
@@ -178,12 +178,9 @@ var server = http.createServer(function(req, res) {
 				else {
 					lobbies[pageElems[1]][index].ready = true;
 
-					if(shouldCreateGame(pageElems[1])) {
+					if(shouldCreateGame(pageElems[1]))
 						createGame(pageElems[1]);
-						console.log("Creating game");
-					}
-					else
-						console.log("Not creating game");
+
 
 					res.writeHead(200);
 					res.end("Success.");
@@ -295,7 +292,7 @@ var server = http.createServer(function(req, res) {
 	else if(pageElems[0] == "updatescore" && pageElems.length > 2) { // "updatescore"/"game"/score
 		if(pageElems[1] in games) { // TODO Regarder si la partie est terminee et si elle a deja commencé
 			index = ipIndex(games[pageElems[1]]["players"], req.connection.remoteAddress);
-			games[pageElems[1]]["players"][index] = pageElems[2];
+			games[pageElems[1]]["players"][index].score = pageElems[2];
 			res.writeHead(200);
 			res.end("Success");
 		}

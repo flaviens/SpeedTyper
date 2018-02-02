@@ -84,6 +84,6 @@ threshold,boxes,sad,donald,remind
 
 
 ### To update your score (to make it visible to the others, so do it regularly during the game)
-/updatescore/<gamename>
+/updatescore/<gamename>/<newscore>
 
 

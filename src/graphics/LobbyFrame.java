@@ -140,6 +140,7 @@ public class LobbyFrame extends JFrame {
 		centerRenderer.setHorizontalAlignment( JLabel.CENTER );
 		table = new JTable(model);
 		table.setDefaultRenderer(boolean.class, centerRenderer);
+		table.setDefaultRenderer(String.class, centerRenderer);
 		scrollPane.setViewportView(table);
 		sl_contentPane.putConstraint(SpringLayout.NORTH, table, 145, SpringLayout.NORTH, contentPane);
 		sl_contentPane.putConstraint(SpringLayout.WEST, table, 10, SpringLayout.WEST, contentPane);

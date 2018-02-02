@@ -127,7 +127,7 @@ var server = http.createServer(function(req, res) {
 	if(shouldCheckInactive()) {
 		Object.keys(lobbies).map(function(lobby, index, object) {
 			Object.keys(lobbies[lobby]).forEach(function(player) {
-				if(lobbies[lobby][player].lastConnection + connectionTimeout <= Date.now())
+				if(!(lobbies[lobby][player] === undefined) && lobbies[lobby][player].lastConnection + connectionTimeout <= Date.now())
 					lobbies[lobby].splice(player, 1);
 			});
 			if(lobbies[lobby].length == 0)

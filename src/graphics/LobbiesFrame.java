@@ -10,6 +10,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 
 import concurrent.LobbiesRefresher;
 import concurrent.LobbyJoiner;
@@ -160,7 +161,11 @@ public class LobbiesFrame extends JFrame {
 		sl_contentPane.putConstraint(SpringLayout.EAST, scrollPane, -10, SpringLayout.EAST, contentPane);
 		contentPane.add(scrollPane);
 		
+		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+		centerRenderer.setHorizontalAlignment( JLabel.CENTER );
 		table = new JTable(model);
+		table.setDefaultRenderer(int.class, centerRenderer);
+		table.setDefaultRenderer(String.class, centerRenderer);
 		table.addMouseListener(new LobbySelectListener());
 		scrollPane.setViewportView(table);
 		sl_contentPane.putConstraint(SpringLayout.NORTH, table, 145, SpringLayout.NORTH, contentPane);

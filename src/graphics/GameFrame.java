@@ -235,7 +235,6 @@ public class GameFrame extends JFrame {
 		gameUpdater.start();
 				
 		currentWordIndex = 0;
-		System.out.println(Lobby.currentLobbyWords[5]);
 		currentWord = Lobby.currentLobbyWords[0];
 
 		refreshWordTables();

@@ -66,7 +66,6 @@ public class NetworkManager {
 	}
 	
 	public void updateLobbies() throws Exception {
-		serverUrl = "http://localhost:8080"; // TODO remove
 		if(serverUrl == "")
 			throw new ConnectException();
 
@@ -95,7 +94,6 @@ public class NetworkManager {
 	}
 	
 	public void updateLobby(String lobbyName) throws Exception {
-		serverUrl = "http://localhost:8080"; // TODO remove
 		if(serverUrl == "")
 			throw new ConnectException();
 
@@ -125,7 +123,6 @@ public class NetworkManager {
 	}
 
 	public void updateGamePlayers(String gameName) throws Exception {
-		serverUrl = "http://localhost:8080"; // TODO remove
 		if(serverUrl == "")
 			throw new ConnectException();
 
@@ -134,7 +131,6 @@ public class NetworkManager {
 		request.run(); // Actually, we execute it sequentially
 		
 		Lobby.currentLobby = new Lobby(gameName);
-		System.out.println(request.getResponse());
 		JSONObject json = new JSONObject(request.getResponse());
 		JSONArray arr = json.getJSONArray("players");
 		for(int i = 0; i < arr.length(); i++) {
@@ -150,8 +146,6 @@ public class NetworkManager {
 	}
 	
 	public synchronized boolean joinLobby(String lobbyName, String playerName) throws Exception { // WARNING Synchronized ?
-		serverUrl = "http://localhost:8080"; // TODO remove
-
 		if(serverUrl == "")
 			try {
 				throw new ConnectException();
@@ -174,8 +168,6 @@ public class NetworkManager {
 	}
 	
 	public synchronized void leave(String lobbyName) {
-		serverUrl = "http://localhost:8080"; // TODO remove
-
 		if(serverUrl == "")
 			try {
 				throw new ConnectException();
@@ -191,8 +183,6 @@ public class NetworkManager {
 	}
 	
 	public void setReady() {
-		serverUrl = "http://localhost:8080"; // TODO remove
-
 		if(serverUrl == "")
 			try {
 				throw new ConnectException();
@@ -208,8 +198,6 @@ public class NetworkManager {
 	}
 	
 	public void fetchWords() {
-		serverUrl = "http://localhost:8080"; // TODO remove
-
 		if(serverUrl == "")
 			try {
 				throw new ConnectException();
@@ -224,14 +212,11 @@ public class NetworkManager {
 		request.run(); // Actually, we execute it sequentially
 		
 		Lobby.currentLobbyWords = request.getResponse().split(",");
-		System.out.println("Fetched words.");
 		
 		LobbyFrame.getInstance().enableReadyButton();
 	}
 	
 	public int getCountDownRemaining() {
-		serverUrl = "http://localhost:8080"; // TODO remove
-
 		if(serverUrl == "")
 			try {
 				throw new ConnectException();
@@ -250,8 +235,6 @@ public class NetworkManager {
 	}
 	
 	public int getGameDuration() {
-		serverUrl = "http://localhost:8080"; // TODO remove
-
 		if(serverUrl == "")
 			try {
 				throw new ConnectException();
@@ -270,7 +253,6 @@ public class NetworkManager {
 	}
 	
 	public void updateScore(int score) {
-		serverUrl = "http://localhost:8080"; // TODO remove
 
 		if(serverUrl == "")
 			try {
@@ -287,7 +269,6 @@ public class NetworkManager {
 	}
 	
 	public boolean isGameFinished() {
-		serverUrl = "http://localhost:8080"; // TODO remove
 
 		if(serverUrl == "")
 			try {
@@ -307,8 +288,6 @@ public class NetworkManager {
 	}
 
 	public boolean isGameCreated() {
-		serverUrl = "http://localhost:8080"; // TODO remove
-
 		if(serverUrl == "")
 			try {
 				throw new ConnectException();

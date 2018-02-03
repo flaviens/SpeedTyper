@@ -214,12 +214,12 @@ public class LobbiesFrame extends JFrame {
 	
 	public void createLobby() {
 		lobbyJoiner = new LobbyJoiner();
-		lobbyJoiner.start(txtCreate.getText().replaceAll("[^0-9a-zA-Z_]", ""), txtName.getText());
+		lobbyJoiner.start(txtCreate.getText().replaceAll(" ", "_").replaceAll("[^0-9a-zA-Z_]", ""), txtName.getText().replaceAll(" ", "_").replaceAll("[^0-9a-zA-Z_]", ""));
 	}
 	
 	public void joinExistingLobby(String lobbyName) {
 		lobbyJoiner = new LobbyJoiner();
-		lobbyJoiner.start(lobbyName, txtName.getText());
+		lobbyJoiner.start(lobbyName, txtName.getText().replaceAll(" ", "_").replaceAll("[^0-9a-zA-Z_]", ""));
 	}
 	
 	public JTable getTable() {

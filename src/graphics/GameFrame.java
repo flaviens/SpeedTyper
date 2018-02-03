@@ -18,6 +18,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 
 import concurrent.CountDownManager;
 import concurrent.GameUpdater;
@@ -96,7 +97,7 @@ public class GameFrame extends JFrame {
 		public Class<?> getColumnClass(int columnIndex) {
 			if (columnIndex == 0)
 				return String.class;
-			return boolean.class;
+			return int.class;
 		}
 
 	}
@@ -168,11 +169,11 @@ public class GameFrame extends JFrame {
 		
 		lblNextword = new JLabel("next_word");
 		Font f = lblNextword.getFont();
-		lblNextword.setFont(f.deriveFont(f.getStyle() | Font.BOLD));
-		sl_contentPane.putConstraint(SpringLayout.NORTH, lblNextword, 47, SpringLayout.NORTH, contentPane);
+		lblNextword.setFont(f.deriveFont(f.getStyle() | Font.BOLD, 24));
+		sl_contentPane.putConstraint(SpringLayout.NORTH, lblNextword, 20, SpringLayout.NORTH, contentPane);
 		sl_contentPane.putConstraint(SpringLayout.NORTH, lblNowWrite, 0, SpringLayout.NORTH, lblNextword);
 		sl_contentPane.putConstraint(SpringLayout.EAST, lblNowWrite, -6, SpringLayout.WEST, lblNextword);
-		sl_contentPane.putConstraint(SpringLayout.WEST, lblNextword, 115, SpringLayout.EAST, textPaneIncoming);
+		sl_contentPane.putConstraint(SpringLayout.WEST, lblNextword, 80, SpringLayout.EAST, textPaneIncoming);
 		contentPane.add(lblNextword);
 		
 		textField = new JTextField();
@@ -216,7 +217,11 @@ public class GameFrame extends JFrame {
 		sl_contentPane.putConstraint(SpringLayout.EAST, scrollPane, -10, SpringLayout.EAST, contentPane);
 		contentPane.add(scrollPane);
 		
+		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+		centerRenderer.setHorizontalAlignment( JLabel.CENTER );
 		table = new JTable();
+		table.setDefaultRenderer(int.class, centerRenderer);
+		table.setDefaultRenderer(String.class, centerRenderer);
 		table.setModel(model);
 		scrollPane.setViewportView(table);
 		

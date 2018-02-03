@@ -299,7 +299,7 @@ public class GameFrame extends JFrame {
 			score = 0;
 		}
 		else
-			lblCountdown.setText(String.valueOf(remaining/1000));
+			lblCountdown.setText(String.valueOf(1+remaining/1000));
 	}
 	
 	public void finish() {

@@ -8,7 +8,9 @@ const carriageReturn = "\r\n"
 
 var lobbies = {};
 var games  = {};
-var dictionaries = {}; // Will contain csv words that the players will have to type
+var dictionaries = {}; // will contain csv words that the players will have to type
+var tokens = {};
+
 
 var forbiddenNames = [];
 
